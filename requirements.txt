@@ -1,0 +1,10 @@
+# Core dependencies
+PyMuPDF==1.24.9         # fitz, PDF processing (line number removal, text extraction)
+PyPDF2==3.0.1           # PDF trimming / cropping
+ultralytics==8.2.50     # YOLOv8 for document layout detection
+Pillow==10.4.0          # Image processing (figures/tables extraction)
+tqdm==4.66.5            # Progress bars
+
+# Utilities
+numpy==1.26.4           # required by ultralytics + PyMuPDF
+torch>=2.1.0            # YOLO backend
