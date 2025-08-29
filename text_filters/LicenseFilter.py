@@ -3,9 +3,6 @@ from typing import List, Tuple, Dict, Any
 
 
 def remove_cc_license_prefix(text):
-    """
-    Remove a specific CC license prefix and return (cleaned_text, removed_parts).
-    """
     pattern = re.compile(
         r"""
         \bCC              # CC
@@ -32,12 +29,10 @@ def delete_license(text, accept_rxiv):
     removed: List[str] = []
     low = text.lower()
 
-    # Whole-line short boilerplate cases
     if ("international license" in low and len(text) < 150) or \
             ("all rights reserved" in low and len(text) < 150):
         return "", [text]
 
-    # Regex span removals
     pattern = re.compile(
         r"(?:cc|all\s+rights|is the author/funder).*?medRxiv preprint",
         flags=re.IGNORECASE | re.DOTALL
@@ -52,7 +47,6 @@ def delete_license(text, accept_rxiv):
         if has_license and has_rxiv:
             to_delete.append((m.start(), m.end()))
 
-    # Perform deletions while collecting removed snippets
     if to_delete:
         parts, last = [], 0
         for start, end in to_delete:
@@ -62,11 +56,9 @@ def delete_license(text, accept_rxiv):
         parts.append(text[last:])
         text = "".join(parts)
 
-    # Remove the CC prefix if present (and record it)
     text, removed_prefixes = remove_cc_license_prefix(text)
     removed.extend(removed_prefixes)
-
-    # Specific phrase removal (and record it if present)
+    
     phrase = "who has granted medRxiv a license to display the preprint in perpetuity"
     if phrase in text:
         text = text.replace(phrase, "")
