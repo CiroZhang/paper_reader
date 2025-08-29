@@ -1,21 +1,11 @@
-# weights_utils.py
 import shutil, subprocess
 from pathlib import Path
 
-def _has_cmd(name: str) -> bool:
+def _has_cmd(name):
     from shutil import which
     return which(name) is not None
 
-def ensure_yolo_weights(
-    weights_path: str = "yolo_model/doclaynet.pt",
-    repo_id: str = "malaysia-ai/YOLOv8X-DocLayNet-Full-1024-42",
-    repo_file: str = "weights/best.pt",
-    prefer_cli: bool = True,
-) -> str:
-    """
-    Ensure YOLO weights exist at weights_path.
-    Try huggingface-cli first (your exact flow), then huggingface_hub as fallback.
-    """
+def ensure_yolo_weights(weights_path= "yolo_model/doclaynet.pt", repo_id= "malaysia-ai/YOLOv8X-DocLayNet-Full-1024-42", repo_file= "weights/best.pt", prefer_cli= True):
     wp = Path(weights_path)
     wp.parent.mkdir(parents=True, exist_ok=True)
     if wp.exists():
@@ -23,7 +13,6 @@ def ensure_yolo_weights(
         return str(wp)
 
     print(f"[INFO] Weights missing → {wp}. Trying auto-download...")
-    # Try your CLI path
     if prefer_cli and _has_cmd("huggingface-cli"):
         tmp = wp.parent / "_hf_tmp_weights"
         tmp.mkdir(parents=True, exist_ok=True)
@@ -45,7 +34,6 @@ def ensure_yolo_weights(
         except Exception as e:
             print(f"[WARN] huggingface-cli failed: {e}")
 
-    # Fallback: Python API
     print("[INFO] Falling back to huggingface_hub Python API...")
     try:
         from huggingface_hub import hf_hub_download
