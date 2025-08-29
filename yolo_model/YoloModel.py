@@ -2,11 +2,24 @@ import fitz
 from ultralytics import YOLO
 from PIL import Image
 from collections import defaultdict
+from functools import lru_cache
 
-WEIGHTS = "yolo_model/doclaynet.pt"
-model = YOLO(WEIGHTS)
 RENDER_SCALE = 3.0
 IMAGE_CLASSES = {"picture", "table", "formula"}
+DEFAULT_WEIGHTS = "yolo_model/doclaynet.pt"
+
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    message=r"You are using `torch\.load` with `weights_only=False`"
+)
+
+
+@lru_cache(maxsize=1)
+def get_model(weights_path: str = DEFAULT_WEIGHTS):
+    # Lazy load on first use only
+    return YOLO(weights_path)
 
 
 def _iou(a, b):
@@ -121,6 +134,7 @@ def sort_regions_interleaved(regs, page, render_scale=3.0, full_w=0.70, min_gap=
 
 
 def get_yolo_output(pdf_name, pdf_path, output_path):
+    model = get_model()
     out = []
     cnt = defaultdict(int)
     with fitz.open(pdf_path) as doc:
@@ -143,7 +157,7 @@ def get_yolo_output(pdf_name, pdf_path, output_path):
                     rel = f"{pdf_name}/p{pno:03d}_{r['c']}{cnt[r['c']]:02d}.png"
                     Image.frombytes("RGB", (pix.width, pix.height), pix.samples).crop((x0, y0, x1, y1)).save(
                         f"{output_path}/{rel}")
-                    content = rel
+                    content = f"images/{rel}"
                 else:
                     rect = fitz.Rect(x0 / RENDER_SCALE, y0 / RENDER_SCALE, x1 / RENDER_SCALE, y1 / RENDER_SCALE)
                     content = page.get_text("text", clip=rect)

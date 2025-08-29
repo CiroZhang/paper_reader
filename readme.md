@@ -71,27 +71,22 @@ Dependencies include:
 - `tqdm`
 
 ### 2. Prepare Model Weights
-Download [DocLayNet YOLO weights](https://github.com/DocLayNet) and place as:
-```
-yolo_model/doclaynet.pt
-```
+The first time you run the pipeline, `weights_utils.py` will automatically download the  **DocLayNet YOLOv8X checkpoint** from Hugging Face 
+([malaysia-ai/YOLOv8X-DocLayNet-Full-1024-42](https://huggingface.co/malaysia-ai/YOLOv8X-DocLayNet-Full-1024-42)) 
+and save it as: `yolo_model/doclaynet.pt`
+
+On subsequent runs, the script will detect the existing file and reuse it, so you don’t need to manually manage the weights.  
 
 ### 3. Run the Pipeline
 ```
-python main.py
+python main.py <input_folder> <output_folder> [--save-raw-json] [--save-removed]
 ```
 
-By default, `main.py` calls:
-```python
-from pdf_extractor import export_pdfs_to_mds
-
-failed = export_pdfs_to_mds(
-    input_folder="paper/前列腺癌",   # input folder containing PDFs
-    output_folder="前列腺癌",        # output folder for results
-    save_raw_json=True,             # save raw JSONL
-    save_removed=True               # save removed sections
-)
-```
+Arguments
+- input_folder – Path to the folder containing PDFs (e.g., paper/前列腺癌)
+- output_folder – Name of the dataset/output folder (e.g., 前列腺癌).
+- --save-raw-json – (optional) Save raw JSONL outputs from YOLO post-processing.
+- --save-removed – (optional) Save removed license/reference sections.
 
 ### 4. Outputs
 After running, you’ll get:
@@ -108,7 +103,7 @@ output_folder/
 
 ## 🧩 Example Workflow
 1. Place your PDFs into `paper/<topic>/`.
-2. Run `python main.py`.
+2. Run `python main.py paper/<topic>/ outputs`.
 3. Check `outputs/` for Markdown files.
 4. Open `.md` files in any Markdown editor to view cleaned text + figures.
 

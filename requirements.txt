@@ -7,4 +7,5 @@ tqdm==4.66.5            # Progress bars
 
 # Utilities
 numpy==1.26.4           # required by ultralytics + PyMuPDF
-torch>=2.1.0            # YOLO backend
+torch>=2.1.0,<2.6       # keep below 2.6 to avoid safe-load issues with YOLO checkpoints
+dill>=0.3.8             # needed for loading older YOLO checkpoints

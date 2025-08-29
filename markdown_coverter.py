@@ -1,7 +1,7 @@
 import os, re
 
 
-def _clean_text(s: str) -> str:
+def _clean_text(s):
     if not s:
         return ""
     s = s.replace("\xa0", " ").strip()
@@ -16,7 +16,6 @@ def convert_jsonl_to_md(jsonl_data):
     md_text = ""
 
     for json_data in jsonl_data:
-        # page = int(json_data["page"])
         content = json_data["content"].strip()
         t = json_data["class"].lower()
 

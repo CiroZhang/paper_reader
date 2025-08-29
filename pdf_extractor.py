@@ -16,7 +16,7 @@ def read_jsonl(file_path):
             yield json.loads(line)
 
 
-def export_pdfs_to_mds(input_folder, output_folder, save_raw_json=True, save_removed=False):
+def export_pdfs_to_mds(input_folder, output_folder, save_raw_json=False, save_removed=False):
     shutil.rmtree(output_folder, ignore_errors=True)
     Path(output_folder).mkdir(parents=True, exist_ok=True)
 
@@ -24,7 +24,7 @@ def export_pdfs_to_mds(input_folder, output_folder, save_raw_json=True, save_rem
     shutil.rmtree(temp_dir, ignore_errors=True)
     temp_dir.mkdir(parents=True, exist_ok=True)
 
-    pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith(".pdf")]
+    pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith(".pdf")][:10]
     for pdf_file in tqdm(pdf_files, desc="Trimming PDFs", unit="file"):
         src_pdf = Path(input_folder) / pdf_file
         tmp_pdf = temp_dir / pdf_file
@@ -56,34 +56,32 @@ def export_pdfs_to_mds(input_folder, output_folder, save_raw_json=True, save_rem
         shutil.rmtree(res_dir, ignore_errors=True)
         res_dir.mkdir(parents=True, exist_ok=True)
 
-        try:
 
-            jsonl_data = yolo_pipeline(pdf_name, str(yolo_pdf), image_folder)
-            jsonl_data, removed_licenses = license_filter(jsonl_data)
-            jsonl_data, removed_reference = reference_filter(jsonl_data)
+        jsonl_data = yolo_pipeline(pdf_name, str(yolo_pdf), image_folder)
+        jsonl_data, removed_licenses = license_filter(jsonl_data)
+        jsonl_data, removed_reference = reference_filter(jsonl_data)
 
-            md_data = convert_jsonl_to_md(jsonl_data)
-            with open(Path(md_folder) / f"{pdf_name}.md", "w", encoding="utf-8", newline="\n") as f:
-                f.write(md_data.rstrip() + "\n")
+        md_data = convert_jsonl_to_md(jsonl_data)
+        with open(Path(md_folder) / f"{pdf_name}.md", "w", encoding="utf-8", newline="\n") as f:
+            f.write(md_data.rstrip() + "\n")
 
-            if save_raw_json:
-                jsonl_path = Path(jsonl_folder) / f"{pdf_name}.jsonl"
-                with open(jsonl_path, "w", encoding="utf-8") as f:
-                    for item in jsonl_data:
-                        f.write(json.dumps(item, ensure_ascii=False) + "\n")
+        if save_raw_json:
+            jsonl_path = Path(jsonl_folder) / f"{pdf_name}.jsonl"
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                for item in jsonl_data:
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
-            if save_removed:
-                md_removed_licenses = convert_jsonl_to_md(removed_licenses)
-                with open(Path(removed_folder) / f"{pdf_name}_removed_licenses.md", "w", encoding="utf-8",
-                          newline="\n") as f:
-                    f.write(md_removed_licenses.rstrip() + "\n")
+        if save_removed:
+            md_removed_licenses = convert_jsonl_to_md(removed_licenses)
+            with open(Path(removed_folder) / f"{pdf_name}_removed_licenses.md", "w", encoding="utf-8",
+                      newline="\n") as f:
+                f.write(md_removed_licenses.rstrip() + "\n")
 
-                md_removed_reference = convert_jsonl_to_md(removed_reference)
-                with open(Path(removed_folder) / f"{pdf_name}_removed_reference.md", "w", encoding="utf-8",
-                          newline="\n") as f:
-                    f.write(md_removed_reference.rstrip() + "\n")
-        except:
-            skipped.append(pdf_file)
+            md_removed_reference = convert_jsonl_to_md(removed_reference)
+            with open(Path(removed_folder) / f"{pdf_name}_removed_reference.md", "w", encoding="utf-8",
+                      newline="\n") as f:
+                f.write(md_removed_reference.rstrip() + "\n")
+
 
 
     shutil.rmtree(temp_dir, ignore_errors=True)
