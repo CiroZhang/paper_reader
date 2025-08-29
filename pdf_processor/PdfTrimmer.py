@@ -11,7 +11,6 @@ def trim_sides(input_path, output_path, top=0.0, bottom=0.0, left=0.0, right=0.0
             writer.add_page(page)
             continue
 
-        # Detect rotation
         try:
             rot = int(getattr(page, "rotation", 0)) % 360
         except Exception:
